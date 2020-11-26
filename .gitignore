@@ -4,4 +4,6 @@
 .tox
 dist/*
 .coverage
+.idea/*
+.idea
 __pycache__
