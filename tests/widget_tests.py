@@ -9,7 +9,7 @@ Quantity = ureg.Quantity
 
 from django.db import transaction
 
-from tests.dummyapp.models import HayBale, EmptyHayBale
+from dummyapp.models import HayBale, EmptyHayBale
 
 from django import forms
 

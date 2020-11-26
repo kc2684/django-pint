@@ -19,9 +19,11 @@ if not settings.configured:
             'django.contrib.sites',
             'django.contrib.flatpages',
             'quantityfield',
-            'tests.dummyapp'
+            'dummyapp',
             ],
-        NOSE_ARGS=['-s','--with-spec'],
+#        NOSE_ARGS=['-s','--with-spec'],
+        NOSE_ARGS=['-s'],
+
     )
 
 from django_nose import NoseTestSuiteRunner

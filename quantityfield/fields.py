@@ -4,8 +4,10 @@ from django.db import models
 
 from django import forms
 
-from . import ureg
+#from dta import ureg, Q_
+#Quantity = Q_
 
+from . import ureg
 Quantity = ureg.Quantity
 
 from .widgets import QuantityWidget
@@ -18,15 +20,18 @@ from pint import DimensionalityError, UndefinedUnitError
 
 class QuantityField(models.FloatField):
 	"""A Django Model Field that resolves to a pint Quantity object"""
-	def __init__(self, base_units=None, *args, **kwargs):
+	def __init__(self, base_units=None, unit_choices=[], *args, **kwargs):
 		if not base_units:
 			raise ValueError('QuantityField must be defined with base units, eg: "gram"')
 
 		# we do this as a way of raising an exception if some crazy unit was supplied.
+		for unit_choice in unit_choices:
+			getattr(ureg, unit_choice)
 		unit = getattr(ureg, base_units)
 
 		# if we've not hit an exception here, we should be all good
 		self.base_units = base_units
+		self.unit_choices = unit_choices
 		super(QuantityField, self).__init__(*args, **kwargs)
 
 	@property
@@ -52,7 +57,7 @@ class QuantityField(models.FloatField):
 		value = self.value_from_object(obj)
 		return self.get_prep_value(value)
 
-	def from_db_value(self, value, expression, connection, context):
+	def from_db_value(self, value, expression, connection):
 		if value is None:
 			return value
 		return Quantity(value * getattr(ureg, self.base_units))
@@ -75,7 +80,7 @@ class QuantityField(models.FloatField):
 			return value
 
 	def formfield(self, **kwargs):
-		defaults = {'form_class':QuantityFormField, 'base_units':self.base_units}
+		defaults = {'form_class':QuantityFormField, 'base_units':self.base_units, 'unit_choices':self.unit_choices}
 		defaults.update(kwargs)
 		return super(QuantityField, self).formfield(**defaults)
 
@@ -111,7 +116,7 @@ class QuantityFormField(forms.FloatField):
 		if isinstance(value, list):
 			val = value[0]
 			units = value[1]
-			if val is None:
+			if val is None or val == '':
 				return None
 			if not units in self.units:
 				raise ValidationError('%(units)s is not a valid choice' % locals())

@@ -7,7 +7,7 @@ Quantity = ureg.Quantity
 
 from django.db import transaction
 
-from tests.dummyapp.models import HayBale, EmptyHayBale
+from dummyapp.models import HayBale, EmptyHayBale
 
 from pint import DimensionalityError, UndefinedUnitError
 
@@ -19,7 +19,7 @@ class TestFieldCreate(TestCase):
 		self.assertEqual(test_grams.units, ureg.gram)
 
 	def test_fails_with_unknown_units(self):
-		with self.assertRaises(ValueError):
+		with self.assertRaises(UndefinedUnitError):
 			test_crazy_units = QuantityField('zinghie')
 
 	def test_base_units_is_required(self):
@@ -55,6 +55,11 @@ class TestFieldSave(TestCase):
 	def test_accepts_null(self):
 		empty = EmptyHayBale.objects.first()
 		self.assertEqual(empty.weight, None)
+
+
+	def test_accepts_blank(self):
+		empty = EmptyHayBale.objects.first()
+		self.assertEqual(empty.weight, '')
 
 
 	def test_value_stored_as_quantity(self):
